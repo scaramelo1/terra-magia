@@ -1,0 +1,38 @@
+{
+  "expo": {
+    "name": "Terra & Magia",
+    "slug": "terra-magia",
+    "platforms": ["ios", "android"],
+    "version": "1.0.0",
+    "scheme": "terramagia",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 260,
+          "resizeMode": "contain",
+          "backgroundColor": "#BFE6F7"
+        }
+      ]
+    ],
+    "experiments": { "typedRoutes": true },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "br.com.fsadesigner.terramagia"
+    },
+    "android": {
+      "package": "br.com.fsadesigner.terramagia",
+      "adaptiveIcon": {
+        "backgroundColor": "#BFE6F7",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png"
+      },
+      "predictiveBackGestureEnabled": false
+    }
+  }
+}
