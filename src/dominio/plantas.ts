@@ -1,4 +1,6 @@
-// Tabela de plantas. Tempos em minutos; valores em moedas.
+// Tabela de plantas. Tomate, milho, berinjela e abóbora têm desenho próprio (src/arte.ts);
+// as outras usam a planta crescida com o emoji por cima até ganharem arte.
+// Tempos em minutos; valores em moedas.
 // As três últimas são mágicas: demoram mais, mas rendem bem mais por plantio.
 
 export type Planta = {
@@ -18,7 +20,7 @@ export const PLANTAS: readonly Planta[] = [
   { id: 'trigo', nome: 'Trigo', emoji: '🌾', nivel: 1, semente: 10, venda: 22, xp: 3, minutos: 10 },
   { id: 'tomate', nome: 'Tomate', emoji: '🍅', nivel: 2, semente: 20, venda: 48, xp: 6, minutos: 30 },
   { id: 'milho', nome: 'Milho', emoji: '🌽', nivel: 3, semente: 30, venda: 80, xp: 10, minutos: 60 },
-  { id: 'morango', nome: 'Morango', emoji: '🍓', nivel: 4, semente: 45, venda: 125, xp: 16, minutos: 120 },
+  { id: 'berinjela', nome: 'Berinjela', emoji: '🍆', nivel: 4, semente: 45, venda: 125, xp: 16, minutos: 120 },
   { id: 'abobora', nome: 'Abóbora', emoji: '🎃', nivel: 5, semente: 60, venda: 180, xp: 25, minutos: 240 },
   { id: 'girassol-lunar', nome: 'Girassol da Lua', emoji: '🌻', nivel: 6, semente: 90, venda: 300, xp: 40, minutos: 360, magica: true },
   { id: 'fruta-estrela', nome: 'Fruta-Estrela', emoji: '⭐', nivel: 8, semente: 120, venda: 420, xp: 60, minutos: 480, magica: true },

@@ -41,7 +41,7 @@ export default function TelaCeleiro() {
 
 const estilos = StyleSheet.create({
   tela: { padding: espaco.m, gap: espaco.m },
-  vazio: { textAlign: 'center', color: cores.textoSuave, marginTop: espaco.g },
+  vazio: { textAlign: 'center', color: cores.sobreGrama, fontWeight: '600', marginTop: espaco.g },
   linha: {
     flexDirection: 'row',
     alignItems: 'center',

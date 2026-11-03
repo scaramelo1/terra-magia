@@ -3,6 +3,7 @@ import { useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -11,6 +12,7 @@ import {
   View,
 } from 'react-native';
 
+import { desenhoDoCanteiro, PROPORCAO_TOPO, TOPO } from '../arte';
 import { Botao, formatarTempo, Mensagem, Placar } from '../componentes/ui';
 import {
   colher,
@@ -24,20 +26,10 @@ import {
   regar,
   tempoRestante,
   TOTAL_CANTEIROS,
-  type Estagio,
 } from '../dominio/fazenda';
 import { PLANTAS, plantaPorId } from '../dominio/plantas';
 import { useFazenda } from '../hooks/useFazenda';
 import { cores, espaco } from '../tema';
-
-const FIGURA: Record<Exclude<Estagio, 'pronta'>, string> = {
-  bloqueado: '🔒',
-  vazio: '',
-  semente: '🫘',
-  broto: '🌱',
-  crescendo: '🌿',
-  murcha: '🥀',
-};
 
 export default function TelaFazenda() {
   const { fazenda, agora, mensagem, agir } = useFazenda();
@@ -77,76 +69,80 @@ export default function TelaFazenda() {
 
   return (
     <View style={{ flex: 1 }}>
-      <ScrollView contentContainerStyle={estilos.tela}>
-        <Placar fazenda={fazenda} />
+      <ScrollView>
+        <Image source={TOPO} style={estilos.topo} resizeMode="cover" accessibilityIgnoresInvertColors />
+        <View style={estilos.tela}>
+          <Placar fazenda={fazenda} />
 
-        <View style={[estilos.grade, { gap: vao, width: lado * LADO + vao * (LADO - 1) }]}>
-          {Array.from({ length: TOTAL_CANTEIROS }, (_, i) => {
-            const e = estagio(fazenda, i, agora);
-            const plantio = fazenda.canteiros[i];
-            const planta = plantio ? plantaPorId(plantio.plantaId) : undefined;
-            const figura = e === 'pronta' ? (planta?.emoji ?? '') : FIGURA[e];
-            const crescendo = e === 'semente' || e === 'broto' || e === 'crescendo';
-            return (
-              <Pressable
-                key={i}
-                accessibilityRole="button"
-                accessibilityLabel={`Canteiro ${i + 1}: ${planta ? `${planta.nome}, ` : ''}${e}`}
-                onPress={() => tocar(i)}
-                style={({ pressed }) => [
-                  estilos.canteiro,
-                  { width: lado, height: lado },
-                  e === 'bloqueado' && estilos.bloqueado,
-                  e === 'pronta' && estilos.pronta,
-                  pressed && { opacity: 0.7 },
-                ]}
-              >
-                <Text style={{ fontSize: lado * 0.45 }}>{figura}</Text>
-                {crescendo && (
-                  <Text style={estilos.tempo}>
-                    {plantio?.regado ? '💧' : ''}
-                    {formatarTempo(tempoRestante(fazenda, i, agora))}
+          <View style={[estilos.grade, { gap: vao, width: lado * LADO + vao * (LADO - 1) }]}>
+            {Array.from({ length: TOTAL_CANTEIROS }, (_, i) => {
+              const e = estagio(fazenda, i, agora);
+              const plantio = fazenda.canteiros[i];
+              const planta = plantio ? plantaPorId(plantio.plantaId) : undefined;
+              const { fonte, selo } = desenhoDoCanteiro(e, planta?.id, planta?.emoji);
+              const crescendo = e === 'semente' || e === 'broto' || e === 'crescendo';
+              return (
+                <Pressable
+                  key={i}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Canteiro ${i + 1}: ${planta ? `${planta.nome}, ` : ''}${e}`}
+                  onPress={() => tocar(i)}
+                  style={({ pressed }) => [
+                    estilos.canteiro,
+                    { width: lado, height: lado },
+                    e === 'bloqueado' && estilos.bloqueado,
+                    e === 'pronta' && estilos.pronta,
+                    pressed && { opacity: 0.7 },
+                  ]}
+                >
+                  <Image source={fonte} style={estilos.desenho} />
+                  {selo && <Text style={[estilos.selo, { fontSize: lado * 0.32 }]}>{selo}</Text>}
+                  {crescendo && (
+                    <Text style={estilos.tempo}>
+                      {plantio?.regado ? '💧' : ''}
+                      {formatarTempo(tempoRestante(fazenda, i, agora))}
+                    </Text>
+                  )}
+                </Pressable>
+              );
+            })}
+          </View>
+
+          <Text style={estilos.dica}>
+            Toque na terra para plantar · na planta para regar (−20% do tempo) · quando estiver pronta, para colher.
+          </Text>
+
+          <Text style={estilos.titulo}>Sementes</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: espaco.p }}>
+            {PLANTAS.map((p) => {
+              const travada = nivel < p.nivel;
+              const escolhida = semente === p.id;
+              return (
+                <Pressable
+                  key={p.id}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: escolhida, disabled: travada }}
+                  disabled={travada}
+                  onPress={() => setSemente(p.id)}
+                  style={[
+                    estilos.semente,
+                    p.magica && estilos.magica,
+                    escolhida && estilos.escolhida,
+                    travada && { opacity: 0.45 },
+                  ]}
+                >
+                  <Text style={{ fontSize: 28 }}>{travada ? '🔒' : p.emoji}</Text>
+                  <Text style={estilos.sementeNome}>{p.nome}</Text>
+                  <Text style={estilos.sementeInfo}>
+                    {travada ? `Nível ${p.nivel}` : `🪙 ${p.semente} · ${formatarTempo(p.minutos * 60_000)}`}
                   </Text>
-                )}
-              </Pressable>
-            );
-          })}
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+
+          <Botao texto={`🏚️ Celeiro (${noCeleiro})`} aoTocar={() => router.push('/celeiro')} />
         </View>
-
-        <Text style={estilos.dica}>
-          Toque na terra para plantar · na planta para regar (−20% do tempo) · quando estiver pronta, para colher.
-        </Text>
-
-        <Text style={estilos.titulo}>Sementes</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: espaco.p }}>
-          {PLANTAS.map((p) => {
-            const travada = nivel < p.nivel;
-            const escolhida = semente === p.id;
-            return (
-              <Pressable
-                key={p.id}
-                accessibilityRole="button"
-                accessibilityState={{ selected: escolhida, disabled: travada }}
-                disabled={travada}
-                onPress={() => setSemente(p.id)}
-                style={[
-                  estilos.semente,
-                  p.magica && estilos.magica,
-                  escolhida && estilos.escolhida,
-                  travada && { opacity: 0.45 },
-                ]}
-              >
-                <Text style={{ fontSize: 28 }}>{travada ? '🔒' : p.emoji}</Text>
-                <Text style={estilos.sementeNome}>{p.nome}</Text>
-                <Text style={estilos.sementeInfo}>
-                  {travada ? `Nível ${p.nivel}` : `🪙 ${p.semente} · ${formatarTempo(p.minutos * 60_000)}`}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </ScrollView>
-
-        <Botao texto={`🏚️ Celeiro (${noCeleiro})`} aoTocar={() => router.push('/celeiro')} />
       </ScrollView>
       {mensagem && <Mensagem {...mensagem} />}
     </View>
@@ -157,19 +153,31 @@ const estilos = StyleSheet.create({
   centro: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   tela: { padding: espaco.m, gap: espaco.m, alignItems: 'stretch' },
   grade: { flexDirection: 'row', flexWrap: 'wrap', alignSelf: 'center' },
+  topo: { width: '100%', aspectRatio: PROPORCAO_TOPO },
   canteiro: {
-    backgroundColor: cores.terra,
-    borderRadius: 10,
-    borderBottomWidth: 4,
+    borderRadius: 8,
+    overflow: 'hidden',
+    borderWidth: 2,
     borderColor: cores.terraEscura,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  bloqueado: { backgroundColor: cores.bloqueado, borderColor: '#9FB08E' },
-  pronta: { borderColor: cores.destaque, borderWidth: 2, borderBottomWidth: 4 },
-  tempo: { position: 'absolute', bottom: 2, fontSize: 9, fontWeight: '700', color: '#fff' },
-  dica: { color: cores.textoSuave, fontSize: 12, textAlign: 'center' },
-  titulo: { fontSize: 17, fontWeight: '800', color: cores.texto },
+  desenho: { position: 'absolute', width: '100%', height: '100%' },
+  bloqueado: { borderColor: '#6E9A3A', opacity: 0.85 },
+  pronta: { borderColor: cores.destaque, borderWidth: 3 },
+  selo: { textShadowColor: 'rgba(0,0,0,0.4)', textShadowRadius: 3 },
+  tempo: {
+    position: 'absolute',
+    bottom: 2,
+    paddingHorizontal: 3,
+    borderRadius: 4,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    fontSize: 9,
+    fontWeight: '700',
+    color: '#fff',
+  },
+  dica: { color: cores.sobreGrama, fontSize: 12, textAlign: 'center', fontWeight: '600' },
+  titulo: { fontSize: 17, fontWeight: '800', color: cores.sobreGrama },
   semente: {
     width: 104,
     padding: espaco.p,
