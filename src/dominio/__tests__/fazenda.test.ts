@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
@@ -20,7 +21,7 @@ import {
 import { MINUTO, PLANTAS } from '../plantas.ts';
 
 function ok(r: Resultado): Fazenda {
-  assert.ok(r.ok, r.ok ? '' : r.motivo);
+  if (!r.ok) assert.fail(r.motivo);
   return r.fazenda;
 }
 
