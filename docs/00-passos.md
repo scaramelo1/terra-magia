@@ -8,7 +8,7 @@ Regras: inspirado na fazenda do Orkut, mas tudo original (nome, arte, personagen
 
 ## 1. Definir o jogo
 
-- ✅ Nome e ícone: Terra & Magia (ícone veio de um print; falta o arquivo original de 1024 px)
+- ✅ Nome e ícone: Terra & Magia
 - ✅ Dia a dia: plantar, regar, colher, vender e crescer o terreno
 - ✅ Lista de plantas com tempo, preço, venda e experiência (9 plantas, 3 mágicas) (2026-11-03)
 - ✅ Níveis: o que cada um libera (plantas novas e terreno de 4×4, 5×5 e 6×6) (2026-11-03)
@@ -37,12 +37,12 @@ Regras: inspirado na fazenda do Orkut, mas tudo original (nome, arte, personagen
 
 ## 5. Arte
 
-- ✅ Ícone do app no Android e no iPhone, recortado da arte enviada (2026-11-03)
+- ✅ Ícone do app no Android e no iPhone, refeito com o arquivo original (`arte-original/icone-original.jpg`, 2048 px) (2026-11-04)
 - ✅ Canteiros em pixel art recortados da cena da fazenda (`scripts/recortar-arte.py`): terra, grama, semente, broto, crescendo, murcha, tomate, milho e berinjela/abóbora prontos; topo da tela com céu, celeiro e cercas (2026-11-03)
 - ✅ Berinjela no lugar do morango, para ter desenho (2026-11-03)
 - ⬜ Arte da cenoura, do trigo e das 3 plantas mágicas (hoje: planta crescida com o emoji por cima)
 - ⬜ Arte das sementes na escolha (hoje: emoji)
-- ⬜ Arquivo original do ícone em 1024 px
+- ✅ Arquivo original do ícone (2026-11-04)
 
 ## 6. Servidor e contas
 
