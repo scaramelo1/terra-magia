@@ -25,8 +25,8 @@ Regras: inspirado na fazenda do Orkut, mas tudo original (nome, arte, personagen
 ## 3. Motor do jogo, sem telas
 
 - ✅ Regras puras em `src/dominio`: plantar, regar (−20% do tempo, uma vez), colher, murchar, limpar, celeiro, vender, níveis e terreno (2026-11-03)
-- ✅ Testes com `node --test` (12 testes) (2026-11-03)
-- ⬜ Relógio do servidor (hoje usa o relógio do celular; dá para trapacear adiantando a hora)
+- ✅ Testes com `node --test` (15 testes) (2026-11-04)
+- 🔶 Relógio do servidor: o app pega a hora do fsadesigners.com.br e conta o tempo com o relógio interno do aparelho, que não muda quando alguém mexe na hora do celular; confere de novo ao abrir, ao voltar para o app e a cada 5 minutos; sem internet, a fazenda fica só para olhar (2026-11-04) (falta o dono testar; no passo 6 o servidor do jogo passa a dar a hora)
 
 ## 4. Primeira versão jogável, só local
 

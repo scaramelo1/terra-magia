@@ -32,7 +32,7 @@ import { useFazenda } from '../hooks/useFazenda';
 import { cores, espaco } from '../tema';
 
 export default function TelaFazenda() {
-  const { fazenda, agora, mensagem, agir } = useFazenda();
+  const { fazenda, agora, horaConferida, mensagem, agir } = useFazenda();
   const { width } = useWindowDimensions();
   const [semente, setSemente] = useState('cenoura');
 
@@ -73,6 +73,9 @@ export default function TelaFazenda() {
         <Image source={TOPO} style={estilos.topo} resizeMode="cover" accessibilityIgnoresInvertColors />
         <View style={estilos.tela}>
           <Placar fazenda={fazenda} />
+          {!horaConferida && (
+            <Text style={estilos.semHora}>📡 Sem internet: a fazenda fica só para olhar até conferir a hora.</Text>
+          )}
 
           <View style={[estilos.grade, { gap: vao, width: lado * LADO + vao * (LADO - 1) }]}>
             {Array.from({ length: TOTAL_CANTEIROS }, (_, i) => {
@@ -175,6 +178,16 @@ const estilos = StyleSheet.create({
     fontSize: 9,
     fontWeight: '700',
     color: '#fff',
+  },
+  semHora: {
+    backgroundColor: '#FFF4D6',
+    borderColor: cores.destaque,
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 10,
+    color: cores.texto,
+    fontWeight: '700',
+    textAlign: 'center',
   },
   dica: { color: cores.sobreGrama, fontSize: 12, textAlign: 'center', fontWeight: '600' },
   titulo: { fontSize: 17, fontWeight: '800', color: cores.sobreGrama },
