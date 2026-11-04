@@ -21,6 +21,7 @@ export default function RootLayout() {
         >
           <Stack.Screen name="index" options={{ title: 'Terra & Magia' }} />
           <Stack.Screen name="celeiro" options={{ title: 'Celeiro' }} />
+          <Stack.Screen name="cercado" options={{ title: 'Cercado' }} />
         </Stack>
       </ProvedorFazenda>
     </SQLiteProvider>

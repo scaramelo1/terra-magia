@@ -1,6 +1,6 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
 
-import { novaFazenda, type Fazenda } from '../dominio/fazenda';
+import { migrarFazenda, novaFazenda, type Fazenda } from '../dominio/fazenda';
 
 const VERSAO_ATUAL = 1;
 
@@ -23,7 +23,7 @@ export async function lerFazenda(db: SQLiteDatabase): Promise<Fazenda> {
   const linha = await db.getFirstAsync<{ valor: string }>("SELECT valor FROM config WHERE chave = 'fazenda'");
   if (!linha) return novaFazenda();
   try {
-    return JSON.parse(linha.valor) as Fazenda;
+    return migrarFazenda(JSON.parse(linha.valor));
   } catch {
     return novaFazenda();
   }

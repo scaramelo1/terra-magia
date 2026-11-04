@@ -14,6 +14,7 @@ import {
 
 import { desenhoDoCanteiro, PROPORCAO_TOPO, TOPO } from '../arte';
 import { Botao, formatarTempo, Mensagem, Placar } from '../componentes/ui';
+import { estadoDoAnimal } from '../dominio/curral';
 import {
   colher,
   estagio,
@@ -48,6 +49,7 @@ export default function TelaFazenda() {
   const vao = 6;
   const lado = Math.floor((Math.min(width, 520) - espaco.m * 2 - vao * (LADO - 1)) / LADO);
   const noCeleiro = Object.values(fazenda.celeiro).reduce((a, b) => a + b, 0);
+  const prontos = fazenda.animais.filter((a) => estadoDoAnimal(a, agora) === 'pronto').length;
 
   function tocar(indice: number) {
     const e = estagio(fazenda!, indice, agora);
@@ -144,7 +146,14 @@ export default function TelaFazenda() {
             })}
           </ScrollView>
 
-          <Botao texto={`🏚️ Celeiro (${noCeleiro})`} aoTocar={() => router.push('/celeiro')} />
+          <View style={estilos.botoes}>
+            <View style={{ flex: 1 }}>
+              <Botao texto={`🏚️ Celeiro (${noCeleiro})`} aoTocar={() => router.push('/celeiro')} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Botao texto={`🐔 Cercado${prontos ? ` (${prontos} ✨)` : ''}`} aoTocar={() => router.push('/cercado')} />
+            </View>
+          </View>
         </View>
       </ScrollView>
       {mensagem && <Mensagem {...mensagem} />}
@@ -189,6 +198,7 @@ const estilos = StyleSheet.create({
     fontWeight: '700',
     textAlign: 'center',
   },
+  botoes: { flexDirection: 'row', gap: espaco.p },
   dica: { color: cores.sobreGrama, fontSize: 12, textAlign: 'center', fontWeight: '600' },
   titulo: { fontSize: 17, fontWeight: '800', color: cores.sobreGrama },
   semente: {

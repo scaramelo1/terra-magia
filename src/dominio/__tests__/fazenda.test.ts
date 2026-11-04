@@ -7,6 +7,7 @@ import {
   estagio,
   expandir,
   limpar,
+  migrarFazenda,
   nivelDe,
   novaFazenda,
   ordemDosCanteiros,
@@ -18,7 +19,7 @@ import {
   type Fazenda,
   type Resultado,
 } from '../fazenda.ts';
-import { MINUTO, PLANTAS } from '../plantas.ts';
+import { MINUTO, PLANTAS, RENDE } from '../plantas.ts';
 
 function ok(r: Resultado): Fazenda {
   if (!r.ok) assert.fail(r.motivo);
@@ -35,7 +36,7 @@ describe('plantar e colher', () => {
     assert.equal(estagio(f, 0, 2 * MINUTO), 'pronta');
     assert.equal(colher(f, 0, 1 * MINUTO).ok, false);
     f = ok(colher(f, 0, 2 * MINUTO));
-    assert.equal(f.celeiro.cenoura, 1);
+    assert.equal(f.celeiro.cenoura, 4);
     assert.equal(f.xp, 1);
     assert.equal(estagio(f, 0, 2 * MINUTO), 'vazio');
   });
@@ -76,7 +77,7 @@ describe('celeiro e níveis', () => {
   it('vende pelo preço da tabela', () => {
     const f: Fazenda = { ...novaFazenda(), celeiro: { trigo: 3 } };
     const g = ok(vender(f, 'trigo', 2));
-    assert.equal(g.moedas, 60 + 44);
+    assert.equal(g.moedas, 60 + 12);
     assert.equal(g.celeiro.trigo, 1);
     assert.equal(ok(vender(g, 'trigo', 1)).celeiro.trigo, undefined);
     assert.equal(vender(g, 'trigo', 5).ok, false);
@@ -97,8 +98,19 @@ describe('celeiro e níveis', () => {
     assert.ok(r.ok && r.aviso?.includes('nível 2'));
   });
 
-  it('toda planta vale mais do que a semente', () => {
-    for (const p of PLANTAS) assert.ok(p.venda > p.semente, p.nome);
+  it('toda colheita vale mais do que a semente, mesmo se um amigo pegar uma unidade', () => {
+    for (const p of PLANTAS) assert.ok(p.venda * (RENDE - 1) > p.semente, p.nome);
+  });
+
+  it('fazenda da versão 1 ganha os campos novos e o celeiro vira unidades', () => {
+    const v1 = { versao: 1, moedas: 10, xp: 5, liberados: 9, canteiros: {}, celeiro: { trigo: 2 } };
+    const f = migrarFazenda(v1);
+    assert.equal(f.versao, 2);
+    assert.equal(f.celeiro.trigo, 8);
+    assert.deepEqual(f.animais, []);
+    assert.deepEqual(f.visitas, []);
+    assert.equal(migrarFazenda(f).celeiro.trigo, 8);
+    assert.deepEqual(migrarFazenda(null), novaFazenda());
   });
 });
 

@@ -2,7 +2,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Botao, Mensagem, Placar } from '../componentes/ui';
 import { vender } from '../dominio/fazenda';
-import { PLANTAS } from '../dominio/plantas';
+import { ITENS } from '../dominio/itens';
 import { useFazenda } from '../hooks/useFazenda';
 import { cores, espaco } from '../tema';
 
@@ -10,7 +10,7 @@ export default function TelaCeleiro() {
   const { fazenda, mensagem, agir } = useFazenda();
   if (!fazenda) return null;
 
-  const itens = PLANTAS.filter((p) => (fazenda.celeiro[p.id] ?? 0) > 0);
+  const itens = ITENS.filter((p) => (fazenda.celeiro[p.id] ?? 0) > 0);
 
   return (
     <View style={{ flex: 1 }}>

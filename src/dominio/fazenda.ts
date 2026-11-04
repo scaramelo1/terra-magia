@@ -1,7 +1,8 @@
 // Regras da fazenda. Tudo puro: o horário entra como parâmetro (`agora`, em ms),
 // para o servidor poder usar o mesmo código com o relógio dele.
 
-import { janelaDeColheita, MINUTO, plantaPorId, type Planta } from './plantas.ts';
+import { itemPorId } from './itens.ts';
+import { janelaDeColheita, MINUTO, plantaPorId, RENDE, type Planta } from './plantas.ts';
 
 export const LADO = 6; // grade 6×6
 export const TOTAL_CANTEIROS = LADO * LADO;
@@ -14,10 +15,21 @@ export type Plantio = {
   plantadoEm: number;
   prontaEm: number;
   regado: boolean;
+  /** Amigo que já pegou uma unidade desta colheita (só um por canteiro). */
+  pegoPor?: string;
 };
 
+/** Um animal no cercado. Sem `prontoEm`, está com fome esperando comida. */
+export type AnimalNoCercado = { id: number; tipo: string; prontoEm: number | null };
+
+/** O que um amigo fez na fazenda (o dono vê a lista). */
+export type Visita = { quem: string; fez: 'regou' | 'pegou'; item: string; em: number };
+
+/** Ajudas e pegas que este jogador fez hoje nas fazendas dos amigos. */
+export type ContaDoDia = { dia: string; ajudas: number; pegas: number };
+
 export type Fazenda = {
-  versao: 1;
+  versao: 2;
   moedas: number;
   xp: number;
   /** Quantos canteiros já foram liberados, na ordem de `ordemDosCanteiros`. */
@@ -25,6 +37,11 @@ export type Fazenda = {
   /** Índice do canteiro (linha * LADO + coluna) → plantio. Ausente = terra vazia. */
   canteiros: Record<number, Plantio>;
   celeiro: Record<string, number>;
+  animais: AnimalNoCercado[];
+  proximoAnimal: number;
+  social: ContaDoDia;
+  /** Últimas visitas recebidas, a mais nova primeiro. */
+  visitas: Visita[];
 };
 
 export type Estagio = 'bloqueado' | 'vazio' | 'semente' | 'broto' | 'crescendo' | 'pronta' | 'murcha';
@@ -40,7 +57,49 @@ function semCanteiro(canteiros: Fazenda['canteiros'], indice: number) {
 }
 
 export function novaFazenda(): Fazenda {
-  return { versao: 1, moedas: MOEDAS_INICIAIS, xp: 0, liberados: 9, canteiros: {}, celeiro: {} };
+  return {
+    versao: 2,
+    moedas: MOEDAS_INICIAIS,
+    xp: 0,
+    liberados: 9,
+    canteiros: {},
+    celeiro: {},
+    animais: [],
+    proximoAnimal: 1,
+    social: { dia: '', ajudas: 0, pegas: 0 },
+    visitas: [],
+  };
+}
+
+/** Lê uma fazenda salva por qualquer versão do app e completa o que faltar. */
+export function migrarFazenda(salva: unknown): Fazenda {
+  const base = novaFazenda();
+  if (!salva || typeof salva !== 'object') return base;
+  const f = salva as Partial<Fazenda> & { versao?: number };
+  const celeiro = { ...(f.celeiro ?? {}) };
+  // Na versão 1 cada colheita rendia 1 unidade; agora rende RENDE, com preço por unidade.
+  if ((f.versao ?? 1) < 2) {
+    for (const id of Object.keys(celeiro)) celeiro[id] *= RENDE;
+  }
+  return { ...base, ...f, celeiro, versao: 2 };
+}
+
+/** Soma experiência e avisa quando sobe de nível. */
+export function ganharXp(f: Fazenda, xp: number): { fazenda: Fazenda; aviso?: string } {
+  const antes = nivelDe(f.xp);
+  const depois = nivelDe(f.xp + xp);
+  return {
+    fazenda: { ...f, xp: f.xp + xp },
+    aviso: depois > antes ? `Você chegou ao nível ${depois}!` : undefined,
+  };
+}
+
+export function guardar(celeiro: Fazenda['celeiro'], item: string, quantidade: number): Fazenda['celeiro'] {
+  const total = (celeiro[item] ?? 0) + quantidade;
+  const copia = { ...celeiro };
+  if (total <= 0) delete copia[item];
+  else copia[item] = total;
+  return copia;
 }
 
 // ---------- níveis ----------
@@ -155,19 +214,21 @@ export function colher(f: Fazenda, indice: number, agora: number): Resultado {
   const p = f.canteiros[indice];
   if (!p || estagio(f, indice, agora) !== 'pronta') return falha('Ainda não está no ponto.');
   const planta = plantaPorId(p.plantaId) as Planta;
-  const nivelAntes = nivelDe(f.xp);
-  const xp = f.xp + planta.xp;
-  const nivelDepois = nivelDe(xp);
+  const { fazenda, aviso } = ganharXp(f, planta.xp);
   return {
     ok: true,
     fazenda: {
-      ...f,
-      xp,
+      ...fazenda,
       canteiros: semCanteiro(f.canteiros, indice),
-      celeiro: { ...f.celeiro, [planta.id]: (f.celeiro[planta.id] ?? 0) + 1 },
+      celeiro: guardar(f.celeiro, planta.id, rendimento(p)),
     },
-    aviso: nivelDepois > nivelAntes ? `Você chegou ao nível ${nivelDepois}!` : undefined,
+    aviso,
   };
+}
+
+/** Quantas unidades a colheita deste canteiro vai dar. */
+export function rendimento(p: Plantio): number {
+  return RENDE - (p.pegoPor ? 1 : 0);
 }
 
 /** Tira uma planta murcha do canteiro. */
@@ -176,14 +237,13 @@ export function limpar(f: Fazenda, indice: number, agora: number): Resultado {
   return { ok: true, fazenda: { ...f, canteiros: semCanteiro(f.canteiros, indice) } };
 }
 
-export function vender(f: Fazenda, plantaId: string, quantidade: number): Resultado {
-  const planta = plantaPorId(plantaId);
-  const tem = f.celeiro[plantaId] ?? 0;
-  if (!planta) return falha('Produto desconhecido.');
+export function vender(f: Fazenda, itemId: string, quantidade: number): Resultado {
+  const item = itemPorId(itemId);
+  if (!item) return falha('Produto desconhecido.');
   if (!Number.isInteger(quantidade) || quantidade < 1) return falha('Quantidade inválida.');
-  if (quantidade > tem) return falha('Não há tudo isso no celeiro.');
-  const celeiro = { ...f.celeiro };
-  if (tem === quantidade) delete celeiro[plantaId];
-  else celeiro[plantaId] = tem - quantidade;
-  return { ok: true, fazenda: { ...f, moedas: f.moedas + planta.venda * quantidade, celeiro } };
+  if (quantidade > (f.celeiro[itemId] ?? 0)) return falha('Não há tudo isso no celeiro.');
+  return {
+    ok: true,
+    fazenda: { ...f, moedas: f.moedas + item.venda * quantidade, celeiro: guardar(f.celeiro, itemId, -quantidade) },
+  };
 }
