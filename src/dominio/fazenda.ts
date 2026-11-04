@@ -4,8 +4,10 @@
 import { itemPorId } from './itens.ts';
 import { janelaDeColheita, MINUTO, plantaPorId, RENDE, type Planta } from './plantas.ts';
 
-export const LADO = 6; // grade 6×6
-export const TOTAL_CANTEIROS = LADO * LADO;
+// O campo do mapa é retangular: 8 colunas por 5 linhas.
+export const COLUNAS = 8;
+export const LINHAS = 5;
+export const TOTAL_CANTEIROS = COLUNAS * LINHAS;
 export const MOEDAS_INICIAIS = 60;
 /** Regar uma vez corta 20% do tempo total de crescimento. */
 export const CORTE_DA_REGA = 0.2;
@@ -29,12 +31,12 @@ export type Visita = { quem: string; fez: 'regou' | 'pegou'; item: string; em: n
 export type ContaDoDia = { dia: string; ajudas: number; pegas: number };
 
 export type Fazenda = {
-  versao: 2;
+  versao: 3;
   moedas: number;
   xp: number;
   /** Quantos canteiros já foram liberados, na ordem de `ordemDosCanteiros`. */
   liberados: number;
-  /** Índice do canteiro (linha * LADO + coluna) → plantio. Ausente = terra vazia. */
+  /** Índice do canteiro (linha * COLUNAS + coluna) → plantio. Ausente = terra vazia. */
   canteiros: Record<number, Plantio>;
   celeiro: Record<string, number>;
   animais: AnimalNoCercado[];
@@ -58,7 +60,7 @@ function semCanteiro(canteiros: Fazenda['canteiros'], indice: number) {
 
 export function novaFazenda(): Fazenda {
   return {
-    versao: 2,
+    versao: 3,
     moedas: MOEDAS_INICIAIS,
     xp: 0,
     liberados: 9,
@@ -81,7 +83,19 @@ export function migrarFazenda(salva: unknown): Fazenda {
   if ((f.versao ?? 1) < 2) {
     for (const id of Object.keys(celeiro)) celeiro[id] *= RENDE;
   }
-  return { ...base, ...f, celeiro, versao: 2 };
+  let canteiros = f.canteiros ?? {};
+  let liberados = f.liberados ?? base.liberados;
+  // Até a versão 2 a grade era 6×6; agora é 8×5. Cada plantio vai para a mesma linha e coluna.
+  if ((f.versao ?? 1) < 3) {
+    canteiros = {};
+    for (const [indice, plantio] of Object.entries(f.canteiros ?? {})) {
+      const linha = Math.floor(Number(indice) / 6);
+      const coluna = Number(indice) % 6;
+      if (linha < LINHAS) canteiros[linha * COLUNAS + coluna] = plantio;
+    }
+    liberados = Math.min(liberados, TOTAL_CANTEIROS);
+  }
+  return { ...base, ...f, celeiro, canteiros, liberados, versao: 3 };
 }
 
 /** Soma experiência e avisa quando sobe de nível. */
@@ -118,15 +132,15 @@ export function nivelDe(xp: number): number {
 // ---------- terreno ----------
 
 /**
- * Ordem em que os canteiros são liberados: o terreno cresce de 3×3 para 4×4, 5×5 e 6×6,
- * sempre a partir do canto de cima à esquerda.
+ * Ordem em que os canteiros são liberados: o terreno cresce de 3×3 para 4×4 e 5×5 a partir
+ * do canto de cima à esquerda e, depois, uma coluna inteira por vez até a 8ª.
  */
 export const ordemDosCanteiros: readonly number[] = (() => {
   const ordem: number[] = [];
-  for (let k = 0; k < LADO; k++) {
-    for (let i = 0; i < LADO; i++) {
-      for (let j = 0; j < LADO; j++) {
-        if (Math.max(i, j) === k) ordem.push(i * LADO + j);
+  for (let k = 0; k < COLUNAS; k++) {
+    for (let i = 0; i < LINHAS; i++) {
+      for (let j = 0; j < COLUNAS; j++) {
+        if (Math.max(i, j) === k) ordem.push(i * COLUNAS + j);
       }
     }
   }
@@ -137,11 +151,12 @@ export function canteiroLiberado(f: Fazenda, indice: number): boolean {
   return ordemDosCanteiros.indexOf(indice) < f.liberados;
 }
 
-/** Nível exigido para cada anel: 4×4 no nível 2, 5×5 no 4, 6×6 no 6. */
+/** Nível exigido: 4×4 no nível 2, 5×5 no 4, 6ª e 7ª colunas no 6 e a 8ª no 8. */
 function nivelParaLiberar(posicao: number): number {
   if (posicao < 16) return 2;
   if (posicao < 25) return 4;
-  return 6;
+  if (posicao < 35) return 6;
+  return 8;
 }
 
 export function proximaExpansao(f: Fazenda): { indice: number; preco: number; nivel: number } | null {

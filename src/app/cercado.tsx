@@ -1,3 +1,4 @@
+import { Stack, useLocalSearchParams } from 'expo-router';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { Botao, formatarTempo, Mensagem, Placar } from '../componentes/ui';
@@ -10,19 +11,26 @@ import { cores, espaco } from '../tema';
 
 export default function TelaCercado() {
   const { fazenda, agora, mensagem, agir } = useFazenda();
+  // Vindo do mapa, mostra só o animal daquela construção (galinheiro, curral ou chiqueiro).
+  const { tipo } = useLocalSearchParams<{ tipo?: string }>();
   if (!fazenda) return null;
   const nivel = nivelDe(fazenda.xp);
+  const especie = tipo ? animalPorId(tipo) : undefined;
+  const meus = fazenda.animais.filter((a) => !especie || a.tipo === especie.id);
+  const aVenda = ANIMAIS.filter((a) => !especie || a.id === especie.id);
+  const titulo = especie ? (TITULOS[especie.id] ?? 'Cercado') : 'Cercado';
 
   return (
     <View style={{ flex: 1 }}>
+      <Stack.Screen options={{ title: titulo }} />
       <ScrollView contentContainerStyle={estilos.tela}>
         <Placar fazenda={fazenda} />
 
         <Text style={estilos.titulo}>Seus animais</Text>
-        {fazenda.animais.length === 0 && (
+        {meus.length === 0 && (
           <Text style={estilos.vazio}>O cercado está vazio. Compre um animal aqui embaixo.</Text>
         )}
-        {fazenda.animais.map((a) => {
+        {meus.map((a) => {
           const animal = animalPorId(a.tipo);
           if (!animal) return null;
           const estado = estadoDoAnimal(a, agora);
@@ -53,7 +61,7 @@ export default function TelaCercado() {
         })}
 
         <Text style={estilos.titulo}>Comprar</Text>
-        {ANIMAIS.map((animal) => {
+        {aVenda.map((animal) => {
           const travado = nivel < animal.nivel;
           const tem = quantosDoTipo(fazenda, animal.id);
           const comida = itemPorId(animal.come.item);
@@ -83,6 +91,8 @@ export default function TelaCercado() {
     </View>
   );
 }
+
+const TITULOS: Record<string, string> = { galinha: 'Galinheiro', vaca: 'Curral', porco: 'Chiqueiro' };
 
 const estilos = StyleSheet.create({
   tela: { padding: espaco.m, gap: espaco.m },

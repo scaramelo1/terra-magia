@@ -19,7 +19,7 @@ export default function RootLayout() {
             contentStyle: { backgroundColor: cores.fundo },
           }}
         >
-          <Stack.Screen name="index" options={{ title: 'Terra & Magia' }} />
+          <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="celeiro" options={{ title: 'Celeiro' }} />
           <Stack.Screen name="cercado" options={{ title: 'Cercado' }} />
         </Stack>

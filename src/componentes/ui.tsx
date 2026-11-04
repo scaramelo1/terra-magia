@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
 
 import { nivelDe, xpDoNivel, type Fazenda } from '../dominio/fazenda';
 import { cores, espaco } from '../tema';
@@ -33,13 +33,13 @@ export function Botao({
 }
 
 /** Moedas, nível e barra de experiência. */
-export function Placar({ fazenda }: { fazenda: Fazenda }) {
+export function Placar({ fazenda, estilo }: { fazenda: Fazenda; estilo?: StyleProp<ViewStyle> }) {
   const nivel = nivelDe(fazenda.xp);
   const inicio = xpDoNivel(nivel);
   const fim = xpDoNivel(nivel + 1);
   const fracao = (fazenda.xp - inicio) / (fim - inicio);
   return (
-    <View style={estilos.placar}>
+    <View style={[estilos.placar, estilo]}>
       <Text style={estilos.moedas}>🪙 {fazenda.moedas}</Text>
       <View style={{ flex: 1 }}>
         <Text style={estilos.nivel}>

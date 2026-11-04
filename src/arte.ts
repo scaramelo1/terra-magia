@@ -3,9 +3,6 @@ import type { ImageSourcePropType } from 'react-native';
 
 import type { Estagio } from './dominio/fazenda';
 
-export const TOPO = require('../assets/fazenda/topo.jpg');
-export const PROPORCAO_TOPO = 1200 / 282;
-
 const PECA = {
   terra: require('../assets/fazenda/terra.png'),
   grama: require('../assets/fazenda/grama.png'),

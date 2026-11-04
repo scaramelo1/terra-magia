@@ -4,7 +4,8 @@ Jogo de fazenda mágica para Android e iOS (Expo SDK 58, Expo Router, expo-sqlit
 
 - `src/dominio/`: regras puras (plantar, regar, colher, murchar, celeiro, níveis, terreno). O horário entra como parâmetro, para o servidor reaproveitar o mesmo código depois.
 - `src/app/`: telas (fazenda e celeiro).
-- `arte-original/`: ícone original (2048 px) e a cena da fazenda em pixel art.
+- `arte-original/`: ícone original (2048 px), a primeira cena (canteiros) e o mapa da fazenda.
+- `src/mapa.ts`: posições do campo e das construções no mapa; `scripts/limpar-mapa.py` gera `assets/mapa/fazenda.webp`.
 - `scripts/recortar-arte.py`: recorta canteiros e o topo da cena para `assets/fazenda/` (`python3 scripts/recortar-arte.py`).
 
 ## Rodar

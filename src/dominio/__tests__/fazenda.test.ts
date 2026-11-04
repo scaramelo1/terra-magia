@@ -105,7 +105,7 @@ describe('celeiro e níveis', () => {
   it('fazenda da versão 1 ganha os campos novos e o celeiro vira unidades', () => {
     const v1 = { versao: 1, moedas: 10, xp: 5, liberados: 9, canteiros: {}, celeiro: { trigo: 2 } };
     const f = migrarFazenda(v1);
-    assert.equal(f.versao, 2);
+    assert.equal(f.versao, 3);
     assert.equal(f.celeiro.trigo, 8);
     assert.deepEqual(f.animais, []);
     assert.deepEqual(f.visitas, []);
@@ -115,9 +115,17 @@ describe('celeiro e níveis', () => {
 });
 
 describe('terreno', () => {
+  it('fazenda da grade 6×6 vai para a 8×5 na mesma linha e coluna', () => {
+    const plantio = { plantaId: 'trigo', plantadoEm: 0, prontaEm: 1, regado: false };
+    const v2 = { ...novaFazenda(), versao: 2, liberados: 36, canteiros: { 7: plantio, 35: plantio } };
+    const f = migrarFazenda(v2);
+    assert.deepEqual(Object.keys(f.canteiros), ['9']); // linha 1, coluna 1; a linha 5 não existe mais
+    assert.equal(f.liberados, 36);
+  });
+
   it('ordem cobre a grade toda sem repetir e começa pelo 3×3', () => {
     assert.equal(new Set(ordemDosCanteiros).size, TOTAL_CANTEIROS);
-    assert.deepEqual([...ordemDosCanteiros.slice(0, 9)].sort((a, b) => a - b), [0, 1, 2, 6, 7, 8, 12, 13, 14]);
+    assert.deepEqual([...ordemDosCanteiros.slice(0, 9)].sort((a, b) => a - b), [0, 1, 2, 8, 9, 10, 16, 17, 18]);
   });
 
   it('expandir pede nível e moedas', () => {
@@ -129,8 +137,8 @@ describe('terreno', () => {
     assert.equal(expandir({ ...f, xp: 10, moedas: 39 }).ok, false);
   });
 
-  it('chega a 36 canteiros e para', () => {
-    let f: Fazenda = { ...novaFazenda(), xp: xpDoNivel(6), moedas: 1_000_000 };
+  it('chega a 40 canteiros e para', () => {
+    let f: Fazenda = { ...novaFazenda(), xp: xpDoNivel(8), moedas: 1_000_000 };
     while (f.liberados < TOTAL_CANTEIROS) f = ok(expandir(f));
     assert.equal(expandir(f).ok, false);
   });

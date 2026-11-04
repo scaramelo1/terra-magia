@@ -33,7 +33,8 @@ Regras: inspirado na fazenda do Orkut, mas tudo original (nome, arte, personagen
 
 ## 4. Primeira versão jogável, só local
 
-- 🔶 Tela da fazenda: grade 6×6, moedas, nível, barra de experiência e escolha de sementes (2026-11-03) (falta o dono testar)
+- 🔶 Fazenda como mapa, com o celular deitado (decisão do dono em 2026-11-04, na escala do Hay Day): a cena enviada pelo dono vira um mapa maior que a tela, que se arrasta com o dedo, com botões ＋ e － de zoom; 40 canteiros (8 × 5) em cima do campo arado; tocar no Celeiro, Galinheiro, Curral ou Chiqueiro abre cada um, com ✨ quando há produto pronto (2026-11-04) (falta o dono testar)
+- ⬜ Zoom com dois dedos (pinça); hoje são botões
 - 🔶 Tela do celeiro: vender 1 ou tudo, com colheitas e produtos dos animais (2026-11-04) (falta o dono testar)
 - 🔶 Tela do cercado: comprar, alimentar e recolher (2026-11-04) (falta o dono testar)
 - ✅ Fazenda salva no aparelho (expo-sqlite) (2026-11-03)
@@ -42,7 +43,10 @@ Regras: inspirado na fazenda do Orkut, mas tudo original (nome, arte, personagen
 ## 5. Arte
 
 - ✅ Ícone do app no Android e no iPhone, refeito com o arquivo original (`arte-original/icone-original.jpg`, 2048 px) (2026-11-04)
-- ✅ Canteiros em pixel art recortados da cena da fazenda (`scripts/recortar-arte.py`): terra, grama, semente, broto, crescendo, murcha, tomate, milho e berinjela/abóbora prontos; topo da tela com céu, celeiro e cercas (2026-11-03)
+- ✅ Canteiros em pixel art recortados da primeira cena (`scripts/recortar-arte.py`): semente, broto, crescendo, murcha, tomate, milho, berinjela e abóbora prontos (2026-11-03)
+- ✅ Mapa da fazenda (`arte-original/fazenda-mapa.webp`): nomes escritos na imagem apagados (`scripts/limpar-mapa.py`) e reescritos pelo app nos lugares certos, porque na imagem "Galinheiro" estava em cima da vaca e "Curral" em cima do feno (2026-11-04)
+- ⬜ Mapa em resolução maior (a imagem tem 1024 px de largura; com zoom alto fica um pouco borrada)
+- ⬜ Plantas sem fundo de terra, para combinar com o campo listrado do mapa
 - ✅ Berinjela no lugar do morango, para ter desenho (2026-11-03)
 - ⬜ Arte da cenoura, do trigo e das 3 plantas mágicas (hoje: planta crescida com o emoji por cima)
 - ⬜ Arte das sementes na escolha (hoje: emoji)

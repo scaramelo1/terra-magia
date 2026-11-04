@@ -2,7 +2,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { colher, novaFazenda, plantar, type Fazenda, type Resultado } from '../fazenda.ts';
+import { colher, novaFazenda, ordemDosCanteiros, plantar, type Fazenda, type Resultado } from '../fazenda.ts';
 import { MINUTO } from '../plantas.ts';
 import {
   ajudarARegar,
@@ -28,7 +28,7 @@ const DIA = Date.parse('2026-11-04T15:00:00Z'); // meio-dia em Brasília
 
 function amigoComTrigo(canteiros: number, quando = DIA): Fazenda {
   let f = { ...novaFazenda(), moedas: 1000 };
-  for (let i = 0; i < canteiros; i++) f = ok(plantar(f, [0, 1, 2, 6, 7, 8, 12, 13, 14][i], 'trigo', quando));
+  for (let i = 0; i < canteiros; i++) f = ok(plantar(f, ordemDosCanteiros[i], 'trigo', quando));
   return f;
 }
 
@@ -57,7 +57,7 @@ describe('visitas', () => {
   it('limites por dia, que zeram à meia-noite de Brasília', () => {
     let visitante = novaFazenda();
     let amigo = amigoComTrigo(9);
-    const indices = [0, 1, 2, 6, 7, 8, 12, 13, 14];
+    const indices = ordemDosCanteiros.slice(0, 9);
     for (let i = 0; i < LIMITE_PEGAS; i++) {
       const r = visita(pegarColheita(amigo, visitante, ANA, indices[i], DIA + 10 * MINUTO));
       amigo = r.amigo;

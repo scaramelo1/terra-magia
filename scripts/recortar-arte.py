@@ -45,8 +45,6 @@ def main():
     marrom = Image.new('RGB', murcha.size, (120, 80, 40))
     Image.blend(murcha, marrom, 0.35).save(SAIDA / 'murcha.png')
 
-    # faixa de cima (céu, celeiro, cercas e galinheiro) para o topo da tela
-    CENA.crop((0, 0, 2000, 470)).resize((1200, 282), Image.LANCZOS).save(SAIDA / 'topo.jpg', quality=88)
     print('ok:', ', '.join(sorted(p.name for p in SAIDA.iterdir())))
 
 
